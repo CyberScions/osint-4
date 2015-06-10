@@ -85,7 +85,7 @@ def urlvoid(domain):
 def virustotal(domain):
     try:
         url = 'https://www.virustotal.com/vtapi/v2/domain/report'
-        parameters = {'domain': domain, 'apikey': '<-- INSERT VIRUSTOTAL API KEY HERE -->'}
+        parameters = {'domain': domain, 'apikey': '<-- INSERT VIRUSTOTAL API HERE -->'}
         response = urllib.urlopen('{0}?{1}'.format(url, urllib.urlencode(parameters))).read()
         rd = json.loads(response)
         if 'resolutions' not in rd and 'subdomains' not in rd and 'detected_urls' not in rd \
