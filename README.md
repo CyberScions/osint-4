@@ -1,2 +1,5 @@
 # iposint
-Query public blocklists against VirusTotal and public blocklists
+Query IP address against public blocklists and VirusTotal
+
+# urlosint
+Query domain against public blocklists, VirusTotal and URLVoid
