@@ -1,5 +1,6 @@
 # iposint
 Query IP address against public blocklists and VirusTotal
+* Install ShodanAPI in order to use Shodan functions
 * Add your own VirusTotal API into Line 80 in iposint.py for VT functionality.
 
 # urlosint
