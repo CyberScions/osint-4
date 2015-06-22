@@ -53,6 +53,8 @@ def domainblocklist(domain):
         except Exception, e:
             print '[!] Error! {0}'.format(e)
             return False
+            
+    print '\n[*] BLOCKLIST RESULTS [*]\n'
 
     for url, org in blocklists.items():
         t = threading.Thread(target=threadurl, args=(domain, url, org))
@@ -68,7 +70,7 @@ def urlvoid(domain):
     dom = parseString(request)
     try:
         if 'detections' in dom.getElementsByTagName('detections')[0].toxml():
-            print '\nURLVOID ENGINE DETECTIONS\n'
+            print '\n[*] URLVOID ENGINE DETECTIONS [*]'
             xmldate = dom.getElementsByTagName('updated')[0].toxml()
             xmldate = xmldate.replace('<updated>', '').replace('</updated>', '')
             xmldate = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(float(xmldate)))
@@ -76,10 +78,10 @@ def urlvoid(domain):
             xmldetections = xmltag.replace('<detections>', '').replace('</detections', '').replace('<engines>', '') \
                 .replace('</engines>', '').replace('<engine>', '').replace('</engine>', '').replace('<count>', '') \
                 .replace('</count>', '').replace('>', '').replace(' ', '')
-            print '\nLastScanDate\n{0}\n'.format(xmldate)
-            print 'Detected Engines\n{0}'.format(xmldetections)
+            print '\n[*] LastScanDate\n{0}\n'.format(xmldate)
+            print '[*] Detected Engines{0}'.format(xmldetections)
     except Exception:
-        print '\nNO URLVOID ENGINE DETECTIONS\n'
+        print '\n[*] NO URLVOID ENGINE DETECTIONS [*]\n'
 
 
 def virustotal(domain):
@@ -91,9 +93,9 @@ def virustotal(domain):
         if 'resolutions' not in rd and 'subdomains' not in rd and 'detected_urls' not in rd \
                 and 'detected_downloaded_samples' not in rd and 'detected_referrer_samples' not in rd \
                 and 'detected_communicating_samples' not in rd:
-            print '\nNO VIRUSTOTAL RESULTS for {0}\n'.format(domain)
+            print '\n[*] NO VIRUSTOTAL RESULTS for {0} [*]\n'.format(domain)
         else:
-            print '\nVIRUSTOTAL RESULTS\n'
+            print '\n[*] VIRUSTOTAL RESULTS [*]\n'
             if 'resolutions' in rd:
                 print '[*] DETECTED IP ADDRESS RESOLUTIONS\n'
                 for resolution in range(0, len(rd['resolutions'])):
@@ -141,8 +143,8 @@ def virustotal(domain):
                     print rd['detected_communicating_samples'][detected]['sha256']
                 print '\n\n'
 
-            print 'FOR MORE INFORMATION, FOLLOW THIS LINK\n'
-            print 'https://www.virustotal.com/en/domain/{0}/information/'.format(domain)
+            print '[*] FOR MORE INFORMATION, FOLLOW THIS LINK'
+            print 'https://www.virustotal.com/en/domain/{0}/information/\n'.format(domain)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
 
@@ -151,9 +153,10 @@ def targetinfo(domain):
     try:
         dnslookup = urllib.urlopen('http://api.hackertarget.com/dnslookup/?q={0}'.format(domain)).read()
         httpheaders = urllib.urlopen('http://api.hackertarget.com/httpheaders/?q={0}'.format(domain)).read()
-
-        print 'DNS LOOKUP\n{0}\n\n'.format(dnslookup)
-        print 'HTTP HEADERS\n{0}\n\n'.format(httpheaders)
+        
+        print '\n[*] GENERAL DOMAIN INFO [*]\n'
+        print '[*] DNS LOOKUP\n{0}\n\n'.format(dnslookup)
+        print '[*] HTTP HEADERS\n{0}\n\n'.format(httpheaders)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
         return False

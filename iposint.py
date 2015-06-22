@@ -7,10 +7,11 @@ import re
 import os
 import sys
 import json
+import time
+import shodan
 import urllib
 import urllib2
 import threading
-import time
 
 
 def color(text, color_code):
@@ -81,10 +82,17 @@ def virustotal(badip):
         response_dict = json.loads(response)
         rd = response_dict
         if 'detected_urls' not in rd and 'detected_downloaded_samples' not in rd and 'detected_communicating_samples' \
-                not in rd:
-            print '\nNO VIRUSTOTAL RESULTS for {0}\n'.format(badip)
+                not in rd and 'resolutions' not in rd:
+            print '\n[*] NO VIRUSTOTAL RESULTS for {0} [*]\n'.format(badip)
         else:
             print '\n[*] VIRUSTOTAL RESULTS [*]\n'
+            if 'resolutions' in rd:
+                print '[*] PASSIVE DNS RESOLUTIONS\n'
+                for resolution in range(0, len(rd['resolutions'])):
+                    print rd['resolutions'][resolution]['last_resolved'],
+                    print '--',
+                    print rd['resolutions'][resolution]['hostname']
+                print '\n'
             if 'detected_urls' in rd:
                 print '[*] DETECTED URLS\n'
                 for detected in range(0, len(rd['detected_urls'])):
@@ -113,11 +121,36 @@ def virustotal(badip):
                     print rd['detected_communicating_samples'][detected]['sha256']
                 print '\n\n'
 
-            print 'FOR MORE INFORMATION, FOLLOW THIS LINK:\n'
+            print 'FOR MORE INFORMATION, FOLLOW THIS LINK:'
             print 'https://www.virustotal.com/en/ip-address/{0}/information/\n'.format(badip)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
         return False
+        
+        
+def shodanapi(badip):
+    try:
+        apikey = '<-- INSERT SHODAN API HERE'
+        api = shodan.Shodan(apikey)
+        request = api.host(badip, history=True)
+        print '[*] SHODAN INFO [*]'
+        for result in request['data']:
+            if 'domains' in result or 'hostnames' in result or 'devicetype' in result:
+                if str(result['domains']) != '[]' and str(result['hostnames']) != '[]':
+                    print '\n[*] TIMESTAMP\n{0}'.format(result['timestamp'])
+                    if 'domains' in result and str(result['domains']) != '[]':
+                        print '[*] DOMAINS\n{0}'.format(str(result['domains'])).replace('[u\'', '').replace('\']', '')
+                    if 'hostnames' in result and str(result['hostnames']) != '[]':
+                        print '[*] HOSTNAMES\n{0}'.format(str(result['hostnames'])).replace('[u\'', '')\
+                            .replace('\']', '')
+                    if 'devicetype' in result and str(result['devicetype']) != '[]':
+                        print '[*] DEVICTYPE\n{0}'.format(result['devicetype'])
+                    if 'os' in result and result['os'] is not None:
+                        print '[*] OS\n{0}'.format(result['os'])
+            else:
+                print 'No SHODAN Info'
+    except Exception, e:
+        print '[!] Error! {0}'.format(e)
 
 
 def targetinfo(badip):
@@ -128,10 +161,10 @@ def targetinfo(badip):
         httpheaders = urllib2.urlopen('http://api.hackertarget.com/httpheaders/?q={0}'.format(badip)).read()
         
         print '\n[*] GENERAL IP INFO [*]\n'
-        print '[*] REVERSE DNS\n{0}\n\n'.format(reversedns)
+        print '[*] REVERSE DNS\n{0}\n'.format(reversedns)
         print '[*] GEOIP\n{0}\n'.format(geoip)
-        print '[*] WHOIS\n{0}\n\n'.format(whois)
-        print '[*] HTTP HEADERS\n{0}\n\n'.format(httpheaders)
+        print '[*] WHOIS\n{0}\n'.format(whois)
+        print '[*] HTTP HEADERS\n{0}\n'.format(httpheaders)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
         return False
@@ -159,6 +192,7 @@ def main():
         valid_ip(badip)
         ipblocklist(badip)
         virustotal(badip)
+        shodanapi(badip)
         targetinfo(badip)
         print 'Total Run Time: {0}'.format(time.time() - starttime)
     except KeyboardInterrupt:
