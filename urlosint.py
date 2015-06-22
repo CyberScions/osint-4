@@ -64,7 +64,7 @@ def domainblocklist(domain):
 
 def urlvoid(domain):
     url = 'http://api.urlvoid.com/api1000'
-    apikey = 'd05ab69cd8267f2dcd8c6ae4de452d0b71f1a7e1'
+    apikey = '<-- INSERT URLVOID API HERE -->'
     url = '{0}/{1}/host/{2}'.format(url, apikey, domain)
     request = urllib2.urlopen('{0}/'.format(url)).read()
     dom = parseString(request)
