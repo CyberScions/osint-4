@@ -9,7 +9,7 @@ Query domain against public blocklists, VirusTotal and URLVoid
 * Add your own URLVOID API into Line 67 in urlosint.py for URLVoid Functionality.
 
 # TODO
-* Get ShodanAPI working in iposint.py. 
+* Get ShodanAPI working in iposint.py
 * Add ShadowServer functionality into OSINT tools
 * Add AlienVault OTX API into IP OSINT
 * Get valid_ip function to work
