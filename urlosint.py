@@ -64,7 +64,7 @@ def domainblocklist(domain):
 
 def urlvoid(domain):
     url = 'http://api.urlvoid.com/api1000'
-    apikey = '<-- INSERT URLVOID API HERE -->'
+    apikey = open('apikey.txt', 'r').readlines()[1].split()[1]
     url = '{0}/{1}/host/{2}'.format(url, apikey, domain)
     request = urllib2.urlopen('{0}/'.format(url)).read()
     dom = parseString(request)
@@ -86,8 +86,9 @@ def urlvoid(domain):
 
 def virustotal(domain):
     try:
+        api = open('apikey.txt', 'r').readlines()[0].split()[1]
         url = 'https://www.virustotal.com/vtapi/v2/domain/report'
-        parameters = {'domain': domain, 'apikey': '<-- INSERT VIRUSTOTAL API HERE -->'}
+        parameters = {'domain': domain, 'apikey': api}
         response = urllib.urlopen('{0}?{1}'.format(url, urllib.urlencode(parameters))).read()
         rd = json.loads(response)
         if 'resolutions' not in rd and 'subdomains' not in rd and 'detected_urls' not in rd \

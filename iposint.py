@@ -76,8 +76,9 @@ def ipblocklist(badip):
 
 def virustotal(badip):
     try:
+        api = open('apikey.txt', 'r').readlines()[0].split()[1]
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
-        parameters = {'ip': badip, 'apikey': '<-- INSERT VIRUSTOTAL API HERE -->'}
+        parameters = {'ip': badip, 'apikey': api}
         response = urllib2.urlopen('{0}?{1}'.format(url, urllib.urlencode(parameters), timeout=30)).read()
         response_dict = json.loads(response)
         rd = response_dict
@@ -130,7 +131,7 @@ def virustotal(badip):
         
 def shodanapi(badip):
     try:
-        apikey = '<-- INSERT SHODAN API HERE'
+        apikey = open('apikey.txt', 'r').readlines()[2].split()[1]
         api = shodan.Shodan(apikey)
         request = api.host(badip, history=True)
         print '[*] SHODAN INFO [*]'
@@ -189,7 +190,7 @@ def main():
             
         starttime = time.time()
             
-        valid_ip(badip)
+        #valid_ip(badip)
         ipblocklist(badip)
         virustotal(badip)
         shodanapi(badip)
