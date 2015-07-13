@@ -10,7 +10,7 @@ Create a file called apikey.txt that contains your VirusTotal, URLVoid and Shoda
 The file format should be as follows:<br>
 virustotal: <-- ENTER APIKEY HERE --><br>
 urlvoid: <-- ENTER APIKEY HERE --><br>
-shodan: <-- ENTER APIKEY HERE -->
+shodan: <-- ENTER APIKEY HERE --><br>
 passivetotal: <-- ENTER API KEY HERE -->
 
 # TODO
