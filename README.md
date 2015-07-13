@@ -1,5 +1,5 @@
 # iposint
-Query IP address against public blocklists and VirusTotal
+Query IP address against public blocklists, VirusTotal and PassiveTotal Passive DNS
 * Install ShodanAPI in order to use Shodan functions
 
 # urlosint
@@ -15,5 +15,10 @@ shodan: <-- ENTER APIKEY HERE -->
 # TODO
 * Get ShodanAPI working in iposint.py
 * Add ShadowServer functionality into OSINT tools
-* Add AlienVault OTX API into IP OSINT
+* Add AlienVault OTX API into iposint
 * Get valid_ip function to work
+
+# UPDATES
+* iposint
+** Added PassiveTotal Passive DNS Resolution
+** Removed ShodanAPI, will re-add after more testing

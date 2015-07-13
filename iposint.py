@@ -11,6 +11,8 @@ import time
 import shodan
 import urllib
 import urllib2
+import requests
+import datetime
 import threading
 
 
@@ -76,6 +78,8 @@ def ipblocklist(badip):
 
 def virustotal(badip):
     try:
+        ninetydays = datetime.datetime.now() - datetime.timedelta(days=90)
+        ninetydaysformat = ninetydays.strftime('%Y-%m-%d')
         api = open('apikey.txt', 'r').readlines()[0].split()[1]
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
         parameters = {'ip': badip, 'apikey': api}
@@ -90,36 +94,40 @@ def virustotal(badip):
             if 'resolutions' in rd:
                 print '[*] PASSIVE DNS RESOLUTIONS\n'
                 for resolution in range(0, len(rd['resolutions'])):
-                    print rd['resolutions'][resolution]['last_resolved'],
-                    print '--',
-                    print rd['resolutions'][resolution]['hostname']
+                    if rd['resolutions'][resolution]['last_resolved'] >= ninetydaysformat:
+                        print rd['resolutions'][resolution]['last_resolved'],
+                        print '--',
+                        print rd['resolutions'][resolution]['hostname']
                 print '\n'
             if 'detected_urls' in rd:
                 print '[*] DETECTED URLS\n'
                 for detected in range(0, len(rd['detected_urls'])):
-                    print rd['detected_urls'][detected]['scan_date'],
-                    print '--',
-                    print rd['detected_urls'][detected]['url']
+                    if rd['detected_urls'][detected]['scan_date'] >= ninetydaysformat:
+                        print rd['detected_urls'][detected]['scan_date'],
+                        print '--',
+                        print rd['detected_urls'][detected]['url']
                 print '\n'
 
             if 'detected_downloaded_samples' in rd:
                 print '[*] DETECTED DOWNLOADED SAMPLES\n'
                 for detected in range(0, len(rd['detected_downloaded_samples'])):
-                    print rd['detected_downloaded_samples'][detected]['date'],
-                    print '--',
-                    print rd['detected_downloaded_samples'][detected]['positives'],
-                    print '--',
-                    print rd['detected_downloaded_samples'][detected]['sha256']
+                    if rd['detected_downloaded_samples'][detected]['date'] >= ninetydaysformat:
+                        print rd['detected_downloaded_samples'][detected]['date'],
+                        print '--',
+                        print rd['detected_downloaded_samples'][detected]['positives'],
+                        print '--',
+                        print rd['detected_downloaded_samples'][detected]['sha256']
                 print '\n\n'
 
             if 'detected_communicating_samples' in rd:
                 print '[*] DETECTED COMMUNICATING SAMPLES\n'
                 for detected in range(0, len(rd['detected_communicating_samples'])):
-                    print rd['detected_communicating_samples'][detected]['date'],
-                    print '--',
-                    print rd['detected_communicating_samples'][detected]['positives'],
-                    print '--',
-                    print rd['detected_communicating_samples'][detected]['sha256']
+                    if rd['detected_communicating_samples'][detected]['date'] >= ninetydaysformat:
+                        print rd['detected_communicating_samples'][detected]['date'],
+                        print '--',
+                        print rd['detected_communicating_samples'][detected]['positives'],
+                        print '--',
+                        print rd['detected_communicating_samples'][detected]['sha256']
                 print '\n\n'
 
             print 'FOR MORE INFORMATION, FOLLOW THIS LINK:'
@@ -129,27 +137,31 @@ def virustotal(badip):
         return False
         
         
-def shodanapi(badip):
+def passivetotal(badip):
     try:
-        apikey = open('apikey.txt', 'r').readlines()[2].split()[1]
-        api = shodan.Shodan(apikey)
-        request = api.host(badip, history=True)
-        print '[*] SHODAN INFO [*]'
-        for result in request['data']:
-            if 'domains' in result or 'hostnames' in result or 'devicetype' in result:
-                if str(result['domains']) != '[]' and str(result['hostnames']) != '[]':
-                    print '\n[*] TIMESTAMP\n{0}'.format(result['timestamp'])
-                    if 'domains' in result and str(result['domains']) != '[]':
-                        print '[*] DOMAINS\n{0}'.format(str(result['domains'])).replace('[u\'', '').replace('\']', '')
-                    if 'hostnames' in result and str(result['hostnames']) != '[]':
-                        print '[*] HOSTNAMES\n{0}'.format(str(result['hostnames'])).replace('[u\'', '')\
-                            .replace('\']', '')
-                    if 'devicetype' in result and str(result['devicetype']) != '[]':
-                        print '[*] DEVICTYPE\n{0}'.format(result['devicetype'])
-                    if 'os' in result and result['os'] is not None:
-                        print '[*] OS\n{0}'.format(result['os'])
-            else:
-                print 'No SHODAN Info'
+        ninetydays = datetime.datetime.now() - datetime.timedelta(days=90)
+        ninetydaysformat = ninetydays.strftime('%Y-%m-%d')
+        api = apikey = open('apikey.txt', 'r').readlines()[3].split()[1]
+        url = 'https://www.passivetotal.org/api/v1/passive'
+        params = {'api_key': api, 'query': badip}
+        response = requests.get(url, params=params)
+        json_response = json.loads(response.content)
+        if json_response['success'] is True:
+            print '[*] PASSIVETOTAL RESULTS [*]'
+            print '\n[*] UNIQUE RESOLUTIONS'
+            for result in json_response['results']['unique_resolutions']:
+                print result
+            print '\n[*] RECORDS'
+            for record in range(0, len(json_response['results']['records'])):
+                if json_response['results']['records'][record]['lastSeen'] >= ninetydaysformat:
+                    source = str(json_response['results']['records'][record]['source'])
+                    print source.replace('[u', '').replace(']', '').replace('u\'', '').replace('\'', ''),
+                    print '--',
+                    print json_response['results']['records'][record]['resolve'],
+                    print '--',
+                    print json_response['results']['records'][record]['lastSeen']
+        else:
+            print '[*] NO PASSIVETOTAL RESULTS [*]'
     except Exception, e:
         print '[!] Error! {0}'.format(e)
 
@@ -193,7 +205,7 @@ def main():
         #valid_ip(badip)
         ipblocklist(badip)
         virustotal(badip)
-        shodanapi(badip)
+        passivetotal(badip)
         targetinfo(badip)
         print 'Total Run Time: {0}'.format(time.time() - starttime)
     except KeyboardInterrupt:
