@@ -258,6 +258,7 @@ def main():
         domainblocklist(domain)
         urlvoid(domain)
         virustotal(domain)
+        passivetotal(domain)
         targetinfo(domain)
         print 'Total Run Time: {0}'.format(time.time() - starttime)
     except KeyboardInterrupt:
