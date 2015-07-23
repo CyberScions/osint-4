@@ -21,4 +21,7 @@ passivetotal: <-- ENTER API KEY HERE -->
 
 # UPDATES
 * Added PassiveTotal Passive DNS Resolution <br>
-* Removed ShodanAPI, will re-add after more testing
+* Removed ShodanAPI, will re-add after more testing <br>
+* Reconfigured VT and PT to only display results within last 90 days <br>
+* Reconfigured output for VT and PT to as a table in iposint <br>
+* Reconfigured output for VT to display as a table in urlosint <br>

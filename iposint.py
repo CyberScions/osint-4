@@ -77,93 +77,129 @@ def ipblocklist(badip):
 
 
 def virustotal(badip):
+    resultlist = {
+    'resolutions': [],
+    'detected_urls': [],
+    'detected_downloaded_samples': [],
+    'detected_communicating_samples': [],
+    'info_url': ''
+    }
     try:
-        ninetydays = datetime.datetime.now() - datetime.timedelta(days=90)
-        ninetydaysformat = ninetydays.strftime('%Y-%m-%d')
+        ninetydays = (datetime.datetime.now() - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
         api = open('apikey.txt', 'r').readlines()[0].split()[1]
         url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
         parameters = {'ip': badip, 'apikey': api}
-        response = urllib2.urlopen('{0}?{1}'.format(url, urllib.urlencode(parameters), timeout=30)).read()
-        response_dict = json.loads(response)
-        rd = response_dict
+        rd = requests.get(url, params=parameters).json()
         if 'detected_urls' not in rd and 'detected_downloaded_samples' not in rd and 'detected_communicating_samples' \
                 not in rd and 'resolutions' not in rd:
             print '\n[*] NO VIRUSTOTAL RESULTS for {0} [*]\n'.format(badip)
         else:
-            print '\n[*] VIRUSTOTAL RESULTS [*]\n'
+            result_dict = {}
+            print '\n[*] VIRUSTOTAL RESULTS [*]'
             if 'resolutions' in rd:
-                print '[*] PASSIVE DNS RESOLUTIONS\n'
                 for resolution in range(0, len(rd['resolutions'])):
-                    if rd['resolutions'][resolution]['last_resolved'] >= ninetydaysformat:
-                        print rd['resolutions'][resolution]['last_resolved'],
-                        print '--',
-                        print rd['resolutions'][resolution]['hostname']
-                print '\n'
+                    if rd['resolutions'][resolution]['last_resolved'] >= ninetydays:
+                        result_dict['last_resolved'] = rd['resolutions'][resolution]['last_resolved']
+                        result_dict['hostname'] = rd['resolutions'][resolution]['hostname']
+                        resultlist['resolutions'].append(result_dict)
+                        result_dict = {}
             if 'detected_urls' in rd:
-                print '[*] DETECTED URLS\n'
                 for detected in range(0, len(rd['detected_urls'])):
-                    if rd['detected_urls'][detected]['scan_date'] >= ninetydaysformat:
-                        print rd['detected_urls'][detected]['scan_date'],
-                        print '--',
-                        print rd['detected_urls'][detected]['url']
-                print '\n'
-
+                    if rd['detected_urls'][detected]['scan_date'] >= ninetydays:
+                        result_dict['scan_date'] = rd['detected_urls'][detected]['scan_date']
+                        result_dict['url'] = rd['detected_urls'][detected]['url']
+                        resultlist['detected_urls'].append(result_dict)
+                        result_dict = {}
             if 'detected_downloaded_samples' in rd:
-                print '[*] DETECTED DOWNLOADED SAMPLES\n'
                 for detected in range(0, len(rd['detected_downloaded_samples'])):
-                    if rd['detected_downloaded_samples'][detected]['date'] >= ninetydaysformat:
-                        print rd['detected_downloaded_samples'][detected]['date'],
-                        print '--',
-                        print rd['detected_downloaded_samples'][detected]['positives'],
-                        print '--',
-                        print rd['detected_downloaded_samples'][detected]['sha256']
-                print '\n\n'
-
+                    if rd['detected_downloaded_samples'][detected]['date'] >= ninetydays:
+                        result_dict['date'] = rd['detected_downloaded_samples'][detected]['date']
+                        result_dict['positives'] = rd['detected_downloaded_samples'][detected]['positives']
+                        result_dict['sha256'] = rd['detected_downloaded_samples'][detected]['sha256']
+                        resultlist['detected_downloaded_samples'].append(result_dict)
+                        result_dict = {}
             if 'detected_communicating_samples' in rd:
-                print '[*] DETECTED COMMUNICATING SAMPLES\n'
                 for detected in range(0, len(rd['detected_communicating_samples'])):
-                    if rd['detected_communicating_samples'][detected]['date'] >= ninetydaysformat:
-                        print rd['detected_communicating_samples'][detected]['date'],
-                        print '--',
-                        print rd['detected_communicating_samples'][detected]['positives'],
-                        print '--',
-                        print rd['detected_communicating_samples'][detected]['sha256']
-                print '\n\n'
-
-            print 'FOR MORE INFORMATION, FOLLOW THIS LINK:'
-            print 'https://www.virustotal.com/en/ip-address/{0}/information/\n'.format(badip)
+                    if rd['detected_communicating_samples'][detected]['date'] >= ninetydays:
+                        result_dict['date'] = rd['detected_communicating_samples'][detected]['date']
+                        result_dict['positives'] = rd['detected_communicating_samples'][detected]['positives']
+                        result_dict['sha256'] = rd['detected_communicating_samples'][detected]['sha256']
+                        resultlist['detected_communicating_samples'].append(result_dict)
+                        result_dict = {}
+            resultlist['info_url'] = 'https://www.virustotal.com/en/ip-address{0}/information'.format(badip)
     except Exception, e:
-        print '[!] Error! {0}'.format(e)
+        print e
         return False
+
+    if len(resultlist['resolutions']) > 0:
+        print '\n[*] PASSIVETOTAL DNS RESOLUTIONS'
+        print 'DATE\t\t\tHOSTNAME'
+        print '----\t\t\t--------'
+        for item in resultlist['resolutions']:
+            print '{0}\t{1}'.format(item['last_resolved'], item['hostname'])
+    if len(resultlist['detected_urls']) > 0:
+        print '\n[*] DETECTED URLS'
+        print 'DATE\t\t\tURL'
+        print '----\t\t\t---'
+        for item in resultlist['detected_urls']:
+            print '{0}\t{1}'.format(item['scan_date'], item['url'])
+    if len(resultlist['detected_downloaded_samples']) > 0:
+        print '\n[*] DETECTED DOWNLOADED SAMPLES'
+        print 'DATE\t\t\tPOS\tSHA256'
+        print '----\t\t\t---\t------'
+        for item in resultlist['detected_downloaded_samples']:
+            print '{0}\t{1}\t{2}'.format(item['date'], item['positives'], item['sha256'])
+    if len(resultlist['detected_communicating_samples']) > 0:
+        print '\n[*] DETECTED COMMUNICATING SAMPLES'
+        print 'DATE\t\t\tPOS\tSHA256'
+        print '----\t\t\t---\t------'
+        for item in resultlist['detected_communicating_samples']:
+            print '{0}\t{1}\t{2}'.format(item['date'], item['positives'], item['sha256'])
+    print '\nFOR MORE INFORMATION, PLEASE VISIT THE FOLLOWING URL:\n{0}'.format(resultlist['info_url'])
         
         
 def passivetotal(badip):
+    resultlist = {
+    'unique_resolutions': [],
+    'records': []
+    }
     try:
-        ninetydays = datetime.datetime.now() - datetime.timedelta(days=90)
-        ninetydaysformat = ninetydays.strftime('%Y-%m-%d')
-        api = apikey = open('apikey.txt', 'r').readlines()[3].split()[1]
+        ninetydays = (datetime.datetime.now() - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
+        api = open('apikey.txt', 'r').readlines()[3].split()[1]
         url = 'https://www.passivetotal.org/api/v1/passive'
         params = {'api_key': api, 'query': badip}
-        response = requests.get(url, params=params)
-        json_response = json.loads(response.content)
+        json_response = requests.get(url, params=params).json()
         if json_response['success'] is True:
-            print '[*] PASSIVETOTAL RESULTS [*]'
-            print '\n[*] UNIQUE RESOLUTIONS'
+            result_dict = {}
+            print '[*] PASSIVETOTAL RESULTS [*]\n'
             for result in json_response['results']['unique_resolutions']:
-                print result
-            print '\n[*] RECORDS'
+                result_dict['unique_resolutions'] = result
+                resultlist['unique_resolutions'].append(result_dict)
+                result_dict = {}
             for record in range(0, len(json_response['results']['records'])):
-                if json_response['results']['records'][record]['lastSeen'] >= ninetydaysformat:
+                if json_response['results']['records'][record]['lastSeen'] >= ninetydays:
                     source = str(json_response['results']['records'][record]['source'])
-                    print source.replace('[u', '').replace(']', '').replace('u\'', '').replace('\'', ''),
-                    print '--',
-                    print json_response['results']['records'][record]['resolve'],
-                    print '--',
-                    print json_response['results']['records'][record]['lastSeen']
+                    source = source.replace('[u', '').replace(']', '').replace('u\'', '').replace('\'', '')
+                    result_dict['source'] = source
+                    result_dict['resolve'] = json_response['results']['records'][record]['resolve']
+                    result_dict['lastSeen'] = json_response['results']['records'][record]['lastSeen']
+                    resultlist['records'].append(result_dict)
+                    result_dict = {}
         else:
-            print '[*] NO PASSIVETOTAL RESULTS [*]'
+            print '[*] NO PASSIVETOTAL RESULTS [*]\n'
     except Exception, e:
         print '[!] Error! {0}'.format(e)
+
+    if len(resultlist['unique_resolutions']) > 0:
+        print '\n[*] UNIQUE RESOLUTIONS'
+        for item in resultlist['unique_resolutions']:
+            print '{0}'.format(item['unique_resolutions'])
+    if len(resultlist['records']) > 0:
+        print '\n[*] RECORDS'
+        print 'DATE\t\t\tSOURCE[s]\t\tURL'
+        print '----\t\t\t---------\t\t---'
+        for item in resultlist['records']:
+            print '{0}\t{1}\t{2}'.format(item['lastSeen'], item['source'], item['resolve'])
 
 
 def targetinfo(badip):
