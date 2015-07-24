@@ -132,7 +132,7 @@ def virustotal(badip):
         return False
 
     if len(resultlist['resolutions']) > 0:
-        print '\n[*] PASSIVETOTAL DNS RESOLUTIONS'
+        print '\n[*] PASSIVE DNS RESOLUTIONS'
         print 'DATE\t\t\tHOSTNAME'
         print '----\t\t\t--------'
         for item in resultlist['resolutions']:
@@ -171,7 +171,7 @@ def passivetotal(badip):
         json_response = requests.get(url, params=params).json()
         if json_response['success'] is True:
             result_dict = {}
-            print '[*] PASSIVETOTAL RESULTS [*]\n'
+            print '\n[*] PASSIVETOTAL RESULTS [*]'
             for result in json_response['results']['unique_resolutions']:
                 result_dict['unique_resolutions'] = result
                 resultlist['unique_resolutions'].append(result_dict)
@@ -186,7 +186,7 @@ def passivetotal(badip):
                     resultlist['records'].append(result_dict)
                     result_dict = {}
         else:
-            print '[*] NO PASSIVETOTAL RESULTS [*]\n'
+            print '\n[*] NO PASSIVETOTAL RESULTS [*]'
     except Exception, e:
         print '[!] Error! {0}'.format(e)
 
@@ -196,8 +196,8 @@ def passivetotal(badip):
             print '{0}'.format(item['unique_resolutions'])
     if len(resultlist['records']) > 0:
         print '\n[*] RECORDS'
-        print 'DATE\t\t\tSOURCE[s]\t\tURL'
-        print '----\t\t\t---------\t\t---'
+        print 'DATE\t\t\tSOURCE[s]\tURL'
+        print '----\t\t\t---------\t---'
         for item in resultlist['records']:
             print '{0}\t{1}\t{2}'.format(item['lastSeen'], item['source'], item['resolve'])
 
@@ -209,11 +209,11 @@ def targetinfo(badip):
         whois = urllib2.urlopen('http://api.hackertarget.com/whois/?q={0}'.format(badip)).read()
         httpheaders = urllib2.urlopen('http://api.hackertarget.com/httpheaders/?q={0}'.format(badip)).read()
         
-        print '\n[*] GENERAL IP INFO [*]\n'
-        print '[*] REVERSE DNS\n{0}\n'.format(reversedns)
-        print '[*] GEOIP\n{0}\n'.format(geoip)
-        print '[*] WHOIS\n{0}\n'.format(whois)
-        print '[*] HTTP HEADERS\n{0}\n'.format(httpheaders)
+        print '\n[*] GENERAL IP INFO [*]'
+        print '\n[*] REVERSE DNS\n{0}'.format(reversedns)
+        print '\n[*] GEOIP\n{0}'.format(geoip)
+        print '\n[*] WHOIS\n{0}'.format(whois)
+        print '\n[*] HTTP HEADERS\n{0}'.format(httpheaders)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
         return False
