@@ -28,6 +28,7 @@ def red(text):
 
 
 def ipblocklist(badip):
+    resultlist = {'blocklists': []}
     blocklists = {
         'http://rules.emergingthreats.net/blockrules/compromised-ips.txt': 'EmergingThreats',
         'http://www.blocklist.de/lists/all.txt': 'BlocklistDE',
@@ -54,26 +55,32 @@ def ipblocklist(badip):
     }
 
     def threadurl(url, badip, org):
+        result_dict = []
         try:
-            request = urllib2.Request(url)
-            request.add_header('User-Agent', 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                                             'Chrome/35.0.1916.153 Safari/537.36')
-            html_content = urllib2.build_opener().open(request).read()
-            matches = re.findall(badip, html_content)
+            headers = {'user-agent': 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                                     'Chrome/35.0.1916.153 Safari/537.36'}
+            request = requests.get(url, headers=headers)
+            matches = re.findall(badip, request.content)
             if badip in matches:
-                print red('{0} is on the {1} list.'.format(badip, org))
+                result_dict.append(org)
+                resultlist['blocklists'].append(result_dict)
             else:
-                print '{0} is NOT on the {1} list.'.format(badip, org)
+                pass
         except Exception, e:
             print '[!] Error! {0}'.format(e)
             return False
             
-    print '\n[*] BLOCKLIST RESULTS [*]\n'
-
     for url, org in blocklists.items():
         t = threading.Thread(target=threadurl, args=(url, badip, org))
         t.start()
         t.join()
+        
+    if resultlist['blocklists'] > 0:
+        print '[*] BLOCKLIST RESULTS [*]'
+        for item in resultlist['blocklists']:
+            print red(str(item)).replace('[\'', '').replace('\']', '')
+    else:
+        print '{0} NOT ON ANY BLOCKLSITS'.format(badip)
 
 
 def virustotal(badip):
@@ -171,7 +178,7 @@ def passivetotal(badip):
         json_response = requests.get(url, params=params).json()
         if json_response['success'] is True:
             result_dict = {}
-            print '\n[*] PASSIVETOTAL RESULTS [*]'
+            print '\n[*] PASSIVETOTAL RESULTS [*]\n'
             for result in json_response['results']['unique_resolutions']:
                 result_dict['unique_resolutions'] = result
                 resultlist['unique_resolutions'].append(result_dict)
@@ -186,7 +193,7 @@ def passivetotal(badip):
                     resultlist['records'].append(result_dict)
                     result_dict = {}
         else:
-            print '\n[*] NO PASSIVETOTAL RESULTS [*]'
+            print '[*] NO PASSIVETOTAL RESULTS [*]\n'
     except Exception, e:
         print '[!] Error! {0}'.format(e)
 
@@ -204,16 +211,16 @@ def passivetotal(badip):
 
 def targetinfo(badip):
     try:
-        reversedns = urllib2.urlopen('http://api.hackertarget.com/reverseiplookup/?q={0}'.format(badip)).read()
-        geoip = urllib2.urlopen('http://api.hackertarget.com/geoip/?q={0}'.format(badip)).read()
-        whois = urllib2.urlopen('http://api.hackertarget.com/whois/?q={0}'.format(badip)).read()
-        httpheaders = urllib2.urlopen('http://api.hackertarget.com/httpheaders/?q={0}'.format(badip)).read()
+        reversedns = requests.get('http://api.hackertarget.com/reverseiplookup/?q={0}'.format(badip))
+        geoip = requests.get('http://api.hackertarget.com/geoip/?q={0}'.format(badip))
+        whois = requests.get('http://api.hackertarget.com/whois/?q={0}'.format(badip))
+        httpheaders = requests.get('http://api.hackertarget.com/httpheaders/?q={0}'.format(badip))
         
-        print '\n[*] GENERAL IP INFO [*]'
-        print '\n[*] REVERSE DNS\n{0}'.format(reversedns)
-        print '\n[*] GEOIP\n{0}'.format(geoip)
-        print '\n[*] WHOIS\n{0}'.format(whois)
-        print '\n[*] HTTP HEADERS\n{0}'.format(httpheaders)
+        print '\n[*] GENERAL IP INFO [*]\n'
+        print '[*] REVERSE DNS\n{0}\n'.format(reversedns.content)
+        print '[*] GEOIP\n{0}\n'.format(geoip.content)
+        print '[*] WHOIS\n{0}\n'.format(whois.content)
+        print '[*] HTTP HEADERS\n{0}\n'.format(httpheaders.content)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
         return False

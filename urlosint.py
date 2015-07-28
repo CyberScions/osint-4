@@ -28,6 +28,7 @@ def red(text):
 
 
 def domainblocklist(domain):
+    resultlist = {'blocklists': []}
     blocklists = {
         'http://hosts-file.net/download/hosts.txt': 'MalwareBytes',
         'http://antispam.imp.ch/swinog-uri-rbl.txt': 'antispam.imp.ch URI RBL',
@@ -42,26 +43,32 @@ def domainblocklist(domain):
     }
 
     def threadurl(domain, url, org):
+        result_dict = []
         try:
-            request = urllib2.Request(url)
-            request.add_header('User-Agent', 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                                             'Chrome/35.0.1916.153 Safari/537.36')
-            html_content = urllib2.build_opener().open(request).read()
-            matches = re.findall(domain, html_content)
+            headers = {'user-agent': 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                                             'Chrome/35.0.1916.153 Safari/537.36'}
+            request = requests.get(url, headers=headers)
+            matches = re.findall(domain, request.content)
             if domain in matches:
-                print red('{0} is on the {1} list.'.format(domain, org))
+                result_dict.append(org)
+                resultlist['blocklists'].append(result_dict)
             else:
-                print '{0} is NOT on the {1} list.'.format(domain, org)
+                pass
         except Exception, e:
             print '[!] Error! {0}'.format(e)
             return False
-            
-    print '\n[*] BLOCKLIST RESULTS [*]\n'
 
     for url, org in blocklists.items():
         t = threading.Thread(target=threadurl, args=(domain, url, org))
         t.start()
         t.join()
+        
+    if resultlist['blocklists'] > 0:
+        print '[*] BLOCKLIST RESULTS [*]'
+        for item in resultlist['blocklists']:
+            print red(str(item)).replace('[\'', '').replace('\']', '')
+    else:
+        print '{0} NOT ON ANY BLOCKLISTS'.format(domain)
 
 
 def urlvoid(domain):
@@ -229,20 +236,20 @@ def passivetotal(domain):
             print '{0}'.format(item['unique_resolutions'])
     if len(resultlist['records']) > 0:
         print '\n[*] RECORDS'
-        print 'DATE\t\t\tSOURCE[s]\t\tIP ADDRESS'
-        print '----\t\t\t---------\t\t----------'
+        print 'DATE\t\t\tSOURCE[s]\tIP ADDRESS'
+        print '----\t\t\t---------\t----------'
         for item in resultlist['records']:
             print '{0}\t{1}\t{2}'.format(item['lastSeen'], item['source'], item['resolve'])
 
 
 def targetinfo(domain):
     try:
-        dnslookup = urllib.urlopen('http://api.hackertarget.com/dnslookup/?q={0}'.format(domain)).read()
-        httpheaders = urllib.urlopen('http://api.hackertarget.com/httpheaders/?q={0}'.format(domain)).read()
+        dnslookup = requests.get('http://api.hackertarget.com/dnslookup/?q={0}'.format(domain))
+        httpheaders = requests.get('http://api.hackertarget.com/httpheaders/?q={0}'.format(domain))
         
         print '\n[*] GENERAL DOMAIN INFO [*]\n'
-        print '[*] DNS LOOKUP\n{0}\n\n'.format(dnslookup)
-        print '[*] HTTP HEADERS\n{0}\n\n'.format(httpheaders)
+        print '[*] DNS LOOKUP\n{0}\n\n'.format(dnslookup.content)
+        print '[*] HTTP HEADERS\n{0}\n\n'.format(httpheaders.content)
     except Exception, e:
         print '[!] Error! {0}'.format(e)
         return False
