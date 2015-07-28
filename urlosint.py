@@ -239,7 +239,7 @@ def passivetotal(domain):
         print 'DATE\t\t\tSOURCE[s]\tIP ADDRESS'
         print '----\t\t\t---------\t----------'
         for item in resultlist['records']:
-            print '{0}\t{1}\t{2}'.format(item['lastSeen'], item['source'], item['resolve'])
+            print '{0}\t{1}\t\t{2}'.format(item['lastSeen'], item['source'], item['resolve'])
 
 
 def targetinfo(domain):
