@@ -60,8 +60,7 @@ def ipblocklist(badip):
             headers = {'user-agent': 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                      'Chrome/35.0.1916.153 Safari/537.36'}
             request = requests.get(url, headers=headers)
-            matches = re.findall(badip, request.content)
-            if badip in matches:
+            if badip in request.ccontent:
                 result_dict.append(org)
                 resultlist['blocklists'].append(result_dict)
             else:
@@ -69,12 +68,12 @@ def ipblocklist(badip):
         except Exception, e:
             print '[!] Error! {0}'.format(e)
             return False
-            
+
     for url, org in blocklists.items():
         t = threading.Thread(target=threadurl, args=(url, badip, org))
         t.start()
         t.join()
-        
+
     if resultlist['blocklists'] > 0:
         print '[*] BLOCKLIST RESULTS [*]'
         for item in resultlist['blocklists']:

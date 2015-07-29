@@ -45,11 +45,10 @@ def domainblocklist(domain):
     def threadurl(domain, url, org):
         result_dict = []
         try:
-            headers = {'user-agent': 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+            header = {'user-agent': 'Mozilla/5.0 (X11, Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                              'Chrome/35.0.1916.153 Safari/537.36'}
-            request = requests.get(url, headers=headers)
-            matches = re.findall(domain, request.content)
-            if domain in matches:
+            request = requests.get(url, header=header)
+            if domain in request.content:
                 result_dict.append(org)
                 resultlist['blocklists'].append(result_dict)
             else:
@@ -62,7 +61,7 @@ def domainblocklist(domain):
         t = threading.Thread(target=threadurl, args=(domain, url, org))
         t.start()
         t.join()
-        
+
     if resultlist['blocklists'] > 0:
         print '[*] BLOCKLIST RESULTS [*]'
         for item in resultlist['blocklists']:
