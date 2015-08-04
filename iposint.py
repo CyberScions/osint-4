@@ -206,6 +206,31 @@ def passivetotal(badip):
         print '----\t\t\t---------\t---'
         for item in resultlist['records']:
             print '{0}\t{1}\t{2}'.format(item['lastSeen'], item['source'], item['resolve'])
+            
+            
+def shadowserver():
+    try:
+        if len(shalist) >= 1:
+            results = {}
+            for sha256 in shalist:
+                url = 'http://bin-test.shadowserver.org/api?sha256={0}'.format(sha256)
+                data = requests.get(url)
+                for line in data.content.split('\n'):
+                    l = line.split(' ', 1)
+                    if len(l) == 2 and not l[1] == '':
+                        results[l[0]] = json.loads(l[1])
+            if len(results) >= 1:
+                print '\n[*] SHADOWSERVER RESULTS [*]'
+                for k,v in results.items():
+                    print 'Source:\t\t\t{0}'.format(v['source'])
+                    print 'OS:\t\t\t{0}'.format(v['os_name'])
+                    print 'Application Type:\t{0}'.format(v['application_type'])
+                    print 'Prouct:\t\t{0}'.format(v['product_name'])
+                    print 'Filename:\t\t{0}'.format(v['filename'])
+            else:
+                print '\n[*] NO SHADOWSERVER RESULTS [*]'
+    except Exception, e:
+        print '[!] Error! {0}'.format(e)
 
 
 def targetinfo(badip):
@@ -248,6 +273,7 @@ def main():
         ipblocklist(badip)
         virustotal(badip)
         passivetotal(badip)
+        shadowserver()
         targetinfo(badip)
         print 'Total Run Time: {0}'.format(time.time() - starttime)
     except KeyboardInterrupt:
