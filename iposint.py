@@ -15,6 +15,8 @@ import requests
 import datetime
 import threading
 
+shalist = []
+
 
 def color(text, color_code):
     if sys.platform == "win32" and os.getenv("TERM") != "xterm":
@@ -84,11 +86,11 @@ def ipblocklist(badip):
 
 def virustotal(badip):
     resultlist = {
-    'resolutions': [],
-    'detected_urls': [],
-    'detected_downloaded_samples': [],
-    'detected_communicating_samples': [],
-    'info_url': ''
+        'resolutions': [],
+        'detected_urls': [],
+        'detected_downloaded_samples': [],
+        'detected_communicating_samples': [],
+        'info_url': ''
     }
     try:
         ninetydays = (datetime.datetime.now() - datetime.timedelta(days=90)).strftime('%Y-%m-%d')
@@ -123,6 +125,7 @@ def virustotal(badip):
                         result_dict['positives'] = rd['detected_downloaded_samples'][detected]['positives']
                         result_dict['sha256'] = rd['detected_downloaded_samples'][detected]['sha256']
                         resultlist['detected_downloaded_samples'].append(result_dict)
+                        shalist.append(str(rd['detected_downloaded_samples'][detected]['sha256']).replace('[u\'', '').replace('\']', ''))
                         result_dict = {}
             if 'detected_communicating_samples' in rd:
                 for detected in range(0, len(rd['detected_communicating_samples'])):
@@ -131,6 +134,7 @@ def virustotal(badip):
                         result_dict['positives'] = rd['detected_communicating_samples'][detected]['positives']
                         result_dict['sha256'] = rd['detected_communicating_samples'][detected]['sha256']
                         resultlist['detected_communicating_samples'].append(result_dict)
+                        shalist.append(str(rd['detected_communicating_samples'][detected]['sha256']).replace('[u\'', '').replace('\']', ''))
                         result_dict = {}
             resultlist['info_url'] = 'https://www.virustotal.com/en/ip-address{0}/information'.format(badip)
     except Exception, e:
