@@ -226,6 +226,7 @@ def shadowserver():
             if len(results) >= 1:
                 print '\n[*] SHADOWSERVER RESULTS [*]'
                 for k,v in results.items():
+                    print 'SHA256:\t\t\t{0}'.format(k)
                     print 'Source:\t\t\t{0}'.format(v['source'])
                     print 'OS:\t\t\t{0}'.format(v['os_name'])
                     print 'Application Type:\t{0}'.format(v['application_type'])
